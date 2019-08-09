@@ -95,11 +95,13 @@ def download_file(list_data,loop):
     max_cout = 512
     semaphore = asyncio.Semaphore(max_cout)
     total = len(list_data)
-    index = 0
+    file_index = 0
     while len(list_data) > 0:
         tasks = []
+        index = 0
         while len(list_data) > 0:
             index += 1
+            file_index += 1
             if index > max_cout:
                 break
             file_url = list_data.pop()
@@ -108,7 +110,7 @@ def download_file(list_data,loop):
             dir_path = dir_path[0:dir_path.rfind("/")]
             if not os.path.exists(dir_path):
                 os.makedirs(dir_path)
-            task = asyncio.ensure_future(write_file(url_str,semaphore,index,total))
+            task = asyncio.ensure_future(write_file(url_str,semaphore,file_index,total))
             tasks.append(task)
         if len(tasks) > 0:
             result = loop.run_until_complete(asyncio.gather(*tasks))
