@@ -92,7 +92,7 @@ def download_file(list_data,loop):
     #避免pycharm同步文件，将文件写到上一级目录
     os.chdir("..")
 
-    max_cout = 512
+    max_cout = 400
     semaphore = asyncio.Semaphore(max_cout)
     total = len(list_data)
     file_index = 0
@@ -165,6 +165,12 @@ def is_invalid_file(url):
     file_name = get_file_name(url)
     return invalid_files.count(file_name) > 0
 
+async def close_client_session():
+    await client_session.close()
+
+async def close_aession():
+    await asession.close()
+
 if __name__ == "__main__":
     start = time.time()
     root_url = "https://www.androidos.net.cn/android/9.0.0_r8/xref/frameworks"
@@ -173,13 +179,13 @@ if __name__ == "__main__":
     file_name = "url_list.txt"
 
     #第一步，将下载的文件列表解析出来
-    # file_list_url = parse_html(root_url,loop)
-    # print("file list count", len(file_list_url))
+    file_list_url = parse_html(root_url,loop)
+    print("file list count", len(file_list_url))
 
-    # asession.close()
+    loop.run_until_complete(close_aession())
 
     #第二步，保存到文件中
-    # save_file(file_name,file_list_url)
+    save_file(file_name,file_list_url)
 
     #第三步，读取文件中的下载列表
     file_list_url = read_file_list(file_name)
@@ -188,7 +194,7 @@ if __name__ == "__main__":
     #第四步，下载文件到本地
     download_file(file_list_url,loop)
 
-    client_session.close()
+    loop.run_until_complete(close_client_session())
 
     loop.close()
     print("complete,cost time:",time.time() - start)
