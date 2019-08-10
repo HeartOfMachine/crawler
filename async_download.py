@@ -4,10 +4,9 @@
 import time,os,shutil
 import asyncio
 from requests_html import AsyncHTMLSession
-import aiohttp,aiofiles
+import aiofiles
 
 asession = AsyncHTMLSession()
-client_session = aiohttp.ClientSession()
 
 #将一个页面的下载列表解析出来，包含文件夹、文件
 async def get_content_list(url,semaphore,index,total):
@@ -49,7 +48,6 @@ async def write_file(url,semaphore,index,total):
             dir_path = file_name
             file_name = file_name.replace("/", "_")
             response = await asession.get(url_str)
-            # content = await response.text(encoding="utf-8")
             async with aiofiles.open(file_name, "wb") as f:
                 await f.write(response.content)
             f.close()
@@ -92,7 +90,7 @@ def download_file(list_data,loop):
     #避免pycharm同步文件，将文件写到上一级目录
     os.chdir("..")
 
-    max_cout = 512
+    max_cout = 360
     semaphore = asyncio.Semaphore(max_cout)
     total = len(list_data)
     file_index = 0
@@ -165,9 +163,6 @@ def is_invalid_file(url):
     file_name = get_file_name(url)
     return invalid_files.count(file_name) > 0
 
-async def close_client_session():
-    await client_session.close()
-
 async def close_aession():
     await asession.close()
 
@@ -179,13 +174,11 @@ if __name__ == "__main__":
     file_name = "url_list.txt"
 
     #第一步，将下载的文件列表解析出来
-    # file_list_url = parse_html(root_url,loop)
-    # print("file list count", len(file_list_url))
-
-    # loop.run_until_complete(close_aession())
+    file_list_url = parse_html(root_url,loop)
+    print("file list count", len(file_list_url))
 
     #第二步，保存到文件中
-    # save_file(file_name,file_list_url)
+    save_file(file_name,file_list_url)
 
     #第三步，读取文件中的下载列表
     file_list_url = read_file_list(file_name)
@@ -194,7 +187,7 @@ if __name__ == "__main__":
     #第四步，下载文件到本地
     download_file(file_list_url,loop)
 
-    loop.run_until_complete(close_client_session())
+    loop.run_until_complete(close_aession())
 
     loop.close()
     print("complete,cost time:",time.time() - start)
